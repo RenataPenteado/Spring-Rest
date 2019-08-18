@@ -1,10 +1,12 @@
-package com.apress.v1.controller;
+package com.apress.v3.controller;
 
 import java.net.URI;
-
+import java.util.Optional;
+import org.springframework.security.access.prepost.PreAuthorize;
 import javax.inject.Inject;
 import javax.validation.Valid;
 
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,8 +26,8 @@ import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiResponses;
 import com.wordnik.swagger.annotations.ApiResponse;
 
-@RestController("pollControllerV1")
-@RequestMapping("/v1/")
+@RestController("pollControllerV3")
+@RequestMapping({"/v3/", "/oauth2/v3/"})
 @Api(value = "polls", description = "Poll API")
 public class PollController {
 
@@ -35,8 +37,8 @@ public class PollController {
 	@RequestMapping(value = "/polls", method = RequestMethod.GET)
 	@ApiOperation(value = "Retrieves all the polls", response=Poll.class,
 	responseContainer="List")
-	public ResponseEntity<Iterable<Poll>> getAllPolls() {
-		Iterable<Poll> allPolls = pollRepository.findAll();
+	public ResponseEntity<Iterable<Poll>> getAllPolls(Pageable pageable) {
+		Iterable<Poll> allPolls = pollRepository.findAll(pageable);
 		return new ResponseEntity<>(allPolls, HttpStatus.OK);
 	}
 
@@ -72,6 +74,7 @@ public class PollController {
 	}
 	
 	@RequestMapping(value="/polls/{pollId}", method=RequestMethod.DELETE)
+	@PreAuthorize("hasAuthority('ROLE_ADMIN')")
 	public ResponseEntity<?> deletePoll(@PathVariable Long pollId) {
 		verifyPoll(pollId);
 		pollRepository.delete(pollId);

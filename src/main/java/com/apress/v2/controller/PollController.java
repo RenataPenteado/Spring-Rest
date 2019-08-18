@@ -1,7 +1,6 @@
 package com.apress.v2.controller;
 
 import java.net.URI;
-import java.util.Optional;
 
 import javax.inject.Inject;
 import javax.validation.Valid;
@@ -61,7 +60,7 @@ public class PollController {
 	@ApiOperation(value = "Retrieves a Poll associated with the pollId", response=Poll.class)
 	public ResponseEntity<?> getPoll(@PathVariable Long pollId) {
 		verifyPoll(pollId);
-		Optional<Poll> p = pollRepository.findById(pollId);
+		Poll p = pollRepository.findOne(pollId);
 		return new ResponseEntity<> (p, HttpStatus.OK);
 	}
 	
@@ -76,12 +75,14 @@ public class PollController {
 	@RequestMapping(value="/polls/{pollId}", method=RequestMethod.DELETE)
 	public ResponseEntity<?> deletePoll(@PathVariable Long pollId) {
 		verifyPoll(pollId);
-		pollRepository.deleteById(pollId);
+		pollRepository.delete(pollId);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 	
 	protected void verifyPoll(Long pollId) throws ResourceNotFoundException {
-		Optional<Poll> poll = pollRepository.findById(pollId);
-		poll.orElseThrow(() -> new ResourceNotFoundException("Poll with id " + pollId + " not found"));
+		Poll poll = pollRepository.findOne(pollId);
+		if(poll == null) {
+			throw new ResourceNotFoundException("Poll with id " + pollId + " not found"); 
+		}
 	}
 }
